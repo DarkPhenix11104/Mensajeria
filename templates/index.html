@@ -1,0 +1,6 @@
+<h2>Usuarios</h2>
+<ul>
+{% for u in usuarios %}
+<li><a href="/chat/{{ u['id'] }}">{{ u['nombre'] }}</a></li>
+{% endfor %}
+</ul>

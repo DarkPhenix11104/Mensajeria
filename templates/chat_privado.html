@@ -1,0 +1,65 @@
+<h2>Chat con {{ nombre }}</h2>
+<a href="/chat">⬅ Volver</a>
+
+<style>
+.right { text-align: right; }
+.left { text-align: left; }
+</style>
+
+<div id="box" style="height:300px; overflow:auto; border:1px solid black; padding:10px;">
+{% for m in mensajes %}
+    <div class="{{ 'right' if m[1] == session['user_id'] else 'left' }}" style="margin:5px 0;">
+        {{ m[3] }}
+    </div>
+{% endfor %}
+</div>
+
+<input id="txt" placeholder="Escribe un mensaje..." style="width:80%;">
+<button onclick="enviar()">Enviar</button>
+
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+<script>
+var socket = io();
+
+var r = "{{ session['user_id'] }}";
+var d = "{{ uid }}";
+
+var room = r < d ? r + "_" + d : d + "_" + r;
+
+socket.emit("join", {room: room});
+
+function enviar(){
+    var input = document.getElementById("txt");
+    var t = input.value.trim();
+
+    if(t === "") return;
+
+    socket.emit("msg", {
+        m: t,
+        r: r,
+        d: d,
+        room: room
+    });
+
+    input.value = "";
+}
+
+socket.on("msg", function(data){
+    var div = document.createElement("div");
+
+    if(data.r == r){
+        div.className = "right";
+    } else {
+        div.className = "left";
+    }
+
+    div.style.margin = "5px 0";
+    div.innerText = data.m;
+
+    var box = document.getElementById("box");
+    box.appendChild(div);
+
+    box.scrollTop = box.scrollHeight;
+});
+</script>

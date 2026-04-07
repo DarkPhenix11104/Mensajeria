@@ -1,0 +1,18 @@
+<h2>Bienvenido {{ session['username'] }}</h2>
+
+<a href="/logout">Cerrar sesión</a>
+
+<form method="GET">
+    <input type="text" name="q" placeholder="Buscar usuario...">
+    <button>Buscar</button>
+</form>
+
+<hr>
+
+{% for u in usuarios %}
+    {% if u[0] != session["user_id"] %}
+        <div>
+            <a href="/chat/{{ u[0] }}">{{ u[1] }}</a>
+        </div>
+    {% endif %}
+{% endfor %}
