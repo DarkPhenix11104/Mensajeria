@@ -1,10 +1,13 @@
+import eventlet
+eventlet.monkey_patch()
+
 from flask import Flask, render_template, request, redirect, session
 from flask_socketio import SocketIO, join_room, emit
 import sqlite3
 
 app = Flask(__name__)
 app.secret_key = "secreto123"
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # ================= DB =================
 def db():
@@ -116,7 +119,13 @@ def privado(uid):
     cur = con.cursor()
 
     cur.execute("SELECT username FROM usuarios WHERE id=?", (uid,))
-    nombre = cur.fetchone()[0]
+    user = cur.fetchone()
+
+    if not user:
+        con.close()
+        return "Usuario no encontrado"
+
+    nombre = user[0]
 
     cur.execute("""
     SELECT * FROM mensajes
@@ -143,8 +152,10 @@ def mensaje(data):
     con = db()
     cur = con.cursor()
 
-    cur.execute("INSERT INTO mensajes (remitente,destinatario,mensaje) VALUES (?,?,?)",
-        (data["r"], data["d"], data["m"]))
+    cur.execute(
+        "INSERT INTO mensajes (remitente,destinatario,mensaje) VALUES (?,?,?)",
+        (data["r"], data["d"], data["m"])
+    )
     con.commit()
     con.close()
 
@@ -152,4 +163,4 @@ def mensaje(data):
 
 # ================= RUN =================
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    socketio.run(app, host="0.0.0.0", port=10000)
