@@ -76,6 +76,7 @@ def registro():
             cur.execute("INSERT INTO usuarios (username,password) VALUES (?,?)",(u,p))
             con.commit()
         except:
+            con.close()
             return "Usuario ya existe"
 
         con.close()
@@ -164,7 +165,7 @@ def mensaje(data):
         emit("msg", data, room=data["room"])
 
     except Exception as e:
-        print("ERROR:", e)
+        print("ERROR EN MENSAJE:", e)
 
 # ================= RUN =================
 if __name__ == "__main__":
