@@ -11,7 +11,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 # ================= DB =================
 def db():
-    return sqlite3.connect("mensajeria.db")
+    return sqlite3.connect("mensajeria.db", check_same_thread=False)
 
 def init():
     con = db()
@@ -149,17 +149,22 @@ def join(data):
 
 @socketio.on("msg")
 def mensaje(data):
-    con = db()
-    cur = con.cursor()
+    try:
+        con = db()
+        cur = con.cursor()
 
-    cur.execute(
-        "INSERT INTO mensajes (remitente,destinatario,mensaje) VALUES (?,?,?)",
-        (data["r"], data["d"], data["m"])
-    )
-    con.commit()
-    con.close()
+        cur.execute(
+            "INSERT INTO mensajes (remitente,destinatario,mensaje) VALUES (?,?,?)",
+            (data["r"], data["d"], data["m"])
+        )
 
-    emit("msg", data, room=data["room"])
+        con.commit()
+        con.close()
+
+        emit("msg", data, room=data["room"])
+
+    except Exception as e:
+        print("ERROR:", e)
 
 # ================= RUN =================
 if __name__ == "__main__":
